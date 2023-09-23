@@ -1,5 +1,15 @@
 version: '3.8'
 services:
+  web:
+    depends_on:
+      - mongo
+    build: .
+    restart: unless-stopped
+    env_file: ./.env
+    volumes:
+      - .:/app
+    ports:
+      - 8081:8081
   mongo:
     image: mongo:latest
     container_name: mongo
