@@ -3,6 +3,12 @@
   <h1>JWT implementation with FastAPI, MongoDB</h1>
 </div>
 
+<p align="center">
+  <a href="https://fastapi.tiangolo.com/">
+    <img src="https://img.shields.io/badge/Awesome-FastAPI-informational?style=for-the-badge&logo=fastapi&labelColor=17202A&color=1abc9c&logoColor=1abc9c" alt="Awesome">
+  </a>
+</p>
+
 # Table of Contents
 
 - [Project Structure](#project-structure)
