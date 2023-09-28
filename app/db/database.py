@@ -1,16 +1,19 @@
-from pymongo import mongo_client
-import pymongo
-from app.config import settings
+from pymongo import mongo_client, ASCENDING
+from pymongo.errors import PyMongoError
 
-client = mongo_client.MongoClient(
-    settings.DATABASE_URL, serverSelectionTimeoutMS=5000)
+from app.core.config import settings
 
-try:
-    conn = client.server_info()
-    print(f'Connected to MongoDB {conn.get("version")}')
-except Exception:
-    print("Unable to connect to the MongoDB server.")
+client = mongo_client.MongoClient(settings.MONGODB_URI)
+print('🚀 Connected to MongoDB...')
 
 db = client[settings.MONGO_INITDB_DATABASE]
 User = db.users
-User.create_index([("email", pymongo.ASCENDING)], unique=True)
+User.create_index([("email", ASCENDING)], unique=True)
+
+
+def init_database() -> None:
+    try:
+        conn = client.server_info()
+        print(f'Connected to MongoDB {conn.get("version")}')
+    except PyMongoError as e:
+        print(f"Unable to connect to the MongoDB server: {e}")

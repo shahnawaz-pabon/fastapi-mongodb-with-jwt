@@ -1,6 +1,9 @@
 from fastapi import FastAPI
+from app.db.database import init_database
 
 app = FastAPI()
+
+init_database()
 
 
 @app.get("/", tags=["Root"])
