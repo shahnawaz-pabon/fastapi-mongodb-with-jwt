@@ -19,6 +19,11 @@ RUN pip install -r requirements.txt
 # Copy the application code to the working directory
 COPY . .
 
+# create a non-root user and switch to it, for security.
+RUN addgroup --system --gid 1001 "fastapi-jwt"
+RUN adduser --system --uid 1001 "fastapi-jwt"
+USER "fastapi-jwt"
+
 # Expose the port on which the application will run
 EXPOSE 8081
 

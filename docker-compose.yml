@@ -2,18 +2,18 @@ version: '3.8'
 services:
   web:
     depends_on:
-      - mongo
+      - mongodb
     build: .
     restart: unless-stopped
-    env_file: ./.env
+    env_file: .env
     volumes:
       - .:/app
     ports:
       - 8081:8081
-  mongo:
+  mongodb:
     image: mongo:latest
     env_file:
-      - ./.env
+      - .env
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
@@ -21,7 +21,7 @@ services:
     volumes:
       - mongo-jwt:/data/db
     ports:
-      - '6000:27017'
+      - '27017:27017'
 
 volumes:
   mongo-jwt:
