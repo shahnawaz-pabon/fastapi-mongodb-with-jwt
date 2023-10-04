@@ -1,9 +1,10 @@
 from fastapi import FastAPI
-from app.db.database import init_database
+from app.core.events import register_events
 
 app = FastAPI()
 
-init_database()
+# Register application events
+register_events(app)
 
 
 @app.get("/", tags=["Root"])
