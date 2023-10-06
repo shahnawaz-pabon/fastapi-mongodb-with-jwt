@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.responses import RedirectResponse
 from app.core.events import register_events
 
 app = FastAPI()
@@ -7,6 +8,6 @@ app = FastAPI()
 register_events(app)
 
 
-@app.get("/", tags=["Root"])
-async def read_root():
-    return {"message": "Server is up and running..."}
+@app.get('/', response_class=RedirectResponse, include_in_schema=False)
+async def docs():
+    return RedirectResponse(url='/docs')
