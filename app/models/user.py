@@ -32,4 +32,4 @@ class UserResponseSchema(UserBaseSchema):
 
 class UserResponse(BaseModel):
     status: str
-    user: UserResponseSchema
+    # user: UserResponseSchema
