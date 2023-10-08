@@ -4,9 +4,10 @@ from app.models.user import UserResponse, CreateUserSchema, LoginUserSchema
 from app.db.database import User
 from app.services import utils
 from app.core.config import settings
-from app.serializers.userSerializers import userEntity
+from app.serializers.userSerializers import userEntity, userResponseEntity
 
 router = APIRouter()
+
 
 # [...] register user
 @router.post('/register', status_code=status.HTTP_201_CREATED, response_model=UserResponse)
@@ -29,7 +30,9 @@ async def create_user(payload: CreateUserSchema):
     payload.created_at = datetime.utcnow()
     payload.updated_at = payload.created_at
     result = User.insert_one(payload.dict())
-    return {"status": "success"}
+    new_user = userResponseEntity(User.find_one({'_id': result.inserted_id}))
+    return {"status": "success", "user": new_user}
+
 
 # [...] login user
 @router.post('/login')
