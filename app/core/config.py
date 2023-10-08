@@ -7,8 +7,8 @@ class Settings(BaseSettings):
     MONGO_INITDB_DATABASE: str
     MONGODB_URI: str
     JWT_PRIVATE_KEY: str
-    REFRESH_TOKEN_EXPIRES_IN: int
-    ACCESS_TOKEN_EXPIRES_IN: int
+    REFRESH_TOKEN_EXPIRES_IN: int # number in minutes
+    ACCESS_TOKEN_EXPIRES_IN: int # number in minutes
     JWT_ALGORITHM: str
     # Add other configuration settings as needed
 

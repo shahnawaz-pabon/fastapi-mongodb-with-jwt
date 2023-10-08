@@ -4,12 +4,11 @@ from app.models.user import UserResponse, CreateUserSchema, LoginUserSchema
 from app.db.database import User
 from app.services import utils
 from app.core.config import settings
+from app.serializers.userSerializers import userEntity
 
 router = APIRouter()
 
 # [...] register user
-
-
 @router.post('/register', status_code=status.HTTP_201_CREATED, response_model=UserResponse)
 async def create_user(payload: CreateUserSchema):
     # Check if user already exist
@@ -32,14 +31,9 @@ async def create_user(payload: CreateUserSchema):
     result = User.insert_one(payload.dict())
     return {"status": "success"}
 
-# [...] imports
-# [...] register user
-
 # [...] login user
-
-
 @router.post('/login')
-def login(payload: LoginUserSchema, response: Response, Authorize: AuthJWT = Depends()):
+def login(payload: LoginUserSchema, response: Response):
     # Check if the user exist
     db_user = User.find_one({'email': payload.email.lower()})
     if not db_user:
@@ -53,20 +47,20 @@ def login(payload: LoginUserSchema, response: Response, Authorize: AuthJWT = Dep
                             detail='Incorrect Email or Password')
 
     # Create access token
-    access_token = Authorize.create_access_token(
+    access_token = utils.create_access_token(
         subject=str(user["id"]), expires_time=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRES_IN))
 
     # Create refresh token
-    refresh_token = Authorize.create_refresh_token(
+    refresh_token = utils.create_refresh_token(
         subject=str(user["id"]), expires_time=timedelta(minutes=settings.REFRESH_TOKEN_EXPIRES_IN))
 
     # Store refresh and access tokens in cookie
-    response.set_cookie('access_token', access_token, settings.ACCESS_TOKEN_EXPIRES_IN * 60,
-                        settings.ACCESS_TOKEN_EXPIRES_IN * 60, '/', None, False, True, 'lax')
+    response.set_cookie('access_token', access_token, settings.ACCESS_TOKEN_EXPIRES_IN,
+                        settings.ACCESS_TOKEN_EXPIRES_IN, '/', None, False, True, 'lax')
     response.set_cookie('refresh_token', refresh_token,
-                        settings.REFRESH_TOKEN_EXPIRES_IN * 60, settings.REFRESH_TOKEN_EXPIRES_IN * 60, '/', None, False, True, 'lax')
-    response.set_cookie('logged_in', 'True', settings.ACCESS_TOKEN_EXPIRES_IN * 60,
-                        settings.ACCESS_TOKEN_EXPIRES_IN * 60, '/', None, False, False, 'lax')
+                        settings.REFRESH_TOKEN_EXPIRES_IN, settings.REFRESH_TOKEN_EXPIRES_IN, '/', None, False, True, 'lax')
+    response.set_cookie('logged_in', 'True', settings.ACCESS_TOKEN_EXPIRES_IN,
+                        settings.ACCESS_TOKEN_EXPIRES_IN, '/', None, False, False, 'lax')
 
     # Send both access
-    return {'status': 'success', 'access_token': access_token}
+    return {'status': 'success', 'access_token': access_token, 'refresh_token': refresh_token}
