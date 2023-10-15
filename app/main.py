@@ -1,10 +1,10 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, Header, HTTPException
 from fastapi.responses import RedirectResponse
 from app.core.events import register_events
 from app.endpoints import user
+from app.services.utils import get_current_user
 
-app = FastAPI()
-
+app = FastAPI(dependencies=[Depends(get_current_user)])
 
 app.include_router(user.router, tags=['Users'], prefix='/api/users')
 
