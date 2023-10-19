@@ -1,5 +1,6 @@
 from passlib.context import CryptContext
 import os
+from pydantic import ValidationError
 from datetime import datetime, timedelta
 from typing import Union, Any
 from jose import jwt, JWTError
@@ -8,10 +9,13 @@ from typing import Annotated, Union
 from fastapi import Depends, HTTPException, status
 from app.core.config import settings
 from app.db.database import User
-from app.models.user import TokenData, fake_users_db, UserInDB
+from app.models.user import TokenPayload
 
 password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_scheme = OAuth2PasswordBearer(
+    tokenUrl="/api/users/login",
+    scheme_name="JWT"
+)
 
 
 def get_hashed_password(password: str) -> str:
@@ -46,12 +50,6 @@ def create_refresh_token(subject: Union[str, Any], expires_time: int = None) -> 
     return encoded_jwt
 
 
-def get_user(db, username: str):
-    if username in db:
-        user_dict = db[username]
-        return UserInDB(**user_dict)
-
-
 async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -61,13 +59,24 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
     try:
         payload = jwt.decode(token, settings.JWT_PRIVATE_KEY,
                              algorithms=[settings.JWT_ALGORITHM])
-        username: str = payload.get("sub")
-        if username is None:
-            raise credentials_exception
-        token_data = TokenData(username=username)
-    except JWTError:
+
+        token_data = TokenPayload(**payload)
+
+        if datetime.fromtimestamp(token_data.exp) < datetime.now():
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Token expired",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+    except (JWTError, ValidationError):
         raise credentials_exception
-    user = get_user(fake_users_db, username=token_data.username)
-    if user is None:
-        raise credentials_exception
-    return user
+
+    print("token_data.sub>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+    print(token_data.sub)
+    # user = get_user(fake_users_db, username=token_data.username)
+
+    # if user is None:
+    #     raise credentials_exception
+
+    return token_data

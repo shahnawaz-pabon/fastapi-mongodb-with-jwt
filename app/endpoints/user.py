@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Response, status, HTTPException
+from fastapi import APIRouter, Response, status, HTTPException, Depends
 from datetime import datetime, timedelta
 from app.models.user import UserResponse, CreateUserSchema, LoginUserSchema
 from app.db.database import User
 from app.services import utils
 from app.core.config import settings
 from app.serializers.userSerializers import userEntity, userResponseEntity
+from app.services.utils import get_current_user
 
 router = APIRouter()
 
@@ -70,6 +71,6 @@ def login(payload: LoginUserSchema, response: Response):
 
 
 @router.get('/me', response_model=UserResponse)
-def get_me(email: str):
+def get_me(email: str = Depends(get_current_user)):
     user = userResponseEntity(User.find_one({'email': email}))
     return {"status": "success", "user": user}
