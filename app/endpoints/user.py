@@ -67,7 +67,7 @@ def login(payload: LoginUserSchema, response: Response):
                         settings.ACCESS_TOKEN_EXPIRES_IN, '/', None, False, False, 'lax')
 
     # Send both access
-    return {'status': 'success', 'access_token': access_token, 'refresh_token': refresh_token}
+    return {'status': 'success', 'access_token': access_token, 'refresh_token': refresh_token, 'token_type': 'Bearer'}
 
 
 @router.get('/me', response_model=UserResponse)

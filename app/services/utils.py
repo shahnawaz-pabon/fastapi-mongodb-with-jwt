@@ -50,18 +50,18 @@ def create_refresh_token(subject: Union[str, Any], expires_time: int = None) -> 
     return encoded_jwt
 
 
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
+async def get_current_user(access_token: Annotated[str, Depends(oauth2_scheme)]):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"Authorization": "Bearer"},
     )
     try:
-        payload = jwt.decode(token, settings.JWT_PRIVATE_KEY,
+        payload = jwt.decode(access_token, settings.JWT_PRIVATE_KEY,
                              algorithms=[settings.JWT_ALGORITHM])
 
         token_data = TokenPayload(**payload)
-
+        print(token_data)
         if datetime.fromtimestamp(token_data.exp) < datetime.now():
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -73,7 +73,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
         raise credentials_exception
 
     print("token_data.sub>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-    print(token_data.sub)
+    print(token_data)
     # user = get_user(fake_users_db, username=token_data.username)
 
     # if user is None:
