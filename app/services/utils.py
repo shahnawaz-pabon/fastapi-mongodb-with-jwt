@@ -4,19 +4,15 @@ from pydantic import ValidationError
 from datetime import datetime, timedelta
 from typing import Union, Any
 from jose import jwt, JWTError
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from typing import Annotated, Union
 from fastapi import Depends, HTTPException, status
 from app.core.config import settings
 from app.db.database import User
-from app.models.user import TokenPayload
+from app.models.user import TokenPayload, UserBaseSchema
 
 password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2_scheme = OAuth2PasswordBearer(
-    tokenUrl="/api/users/login",
-    scheme_name="JWT"
-)
-
+bearer_security = HTTPBearer()
 
 def get_hashed_password(password: str) -> str:
     return password_context.hash(password)
@@ -50,18 +46,23 @@ def create_refresh_token(subject: Union[str, Any], expires_time: int = None) -> 
     return encoded_jwt
 
 
-async def get_current_user(access_token: Annotated[str, Depends(oauth2_scheme)]):
+def get_user(email):
+    user = User.find_one({'email': email})
+    return user
+
+
+async def get_current_user(access_token: HTTPAuthorizationCredentials = Depends(bearer_security)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"Authorization": "Bearer"},
     )
     try:
-        payload = jwt.decode(access_token, settings.JWT_PRIVATE_KEY,
+        payload = jwt.decode(access_token.credentials, settings.JWT_PRIVATE_KEY,
                              algorithms=[settings.JWT_ALGORITHM])
 
         token_data = TokenPayload(**payload)
-        print(token_data)
+
         if datetime.fromtimestamp(token_data.exp) < datetime.now():
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -72,11 +73,9 @@ async def get_current_user(access_token: Annotated[str, Depends(oauth2_scheme)])
     except (JWTError, ValidationError):
         raise credentials_exception
 
-    print("token_data.sub>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-    print(token_data)
-    # user = get_user(fake_users_db, username=token_data.username)
+    user = get_user(token_data.sub)
 
-    # if user is None:
-    #     raise credentials_exception
+    if user is None:
+        raise credentials_exception
 
-    return token_data
+    return UserBaseSchema(**user)

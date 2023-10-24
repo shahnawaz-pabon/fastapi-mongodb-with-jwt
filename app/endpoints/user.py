@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Response, status, HTTPException, Depends
 from datetime import datetime, timedelta
-from app.models.user import UserResponse, CreateUserSchema, LoginUserSchema
+from app.models.user import UserResponse, CreateUserSchema, LoginUserSchema, UserBaseSchema
 from app.db.database import User
 from app.services import utils
 from app.core.config import settings
@@ -52,11 +52,11 @@ def login(payload: LoginUserSchema, response: Response):
 
     # Create access token
     access_token = utils.create_access_token(
-        subject=str(user["id"]), expires_time=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRES_IN))
+        subject=str(user["email"]), expires_time=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRES_IN))
 
     # Create refresh token
     refresh_token = utils.create_refresh_token(
-        subject=str(user["id"]), expires_time=timedelta(minutes=settings.REFRESH_TOKEN_EXPIRES_IN))
+        subject=str(user["email"]), expires_time=timedelta(minutes=settings.REFRESH_TOKEN_EXPIRES_IN))
 
     # Store refresh and access tokens in cookie
     response.set_cookie('access_token', access_token, settings.ACCESS_TOKEN_EXPIRES_IN,
@@ -71,6 +71,5 @@ def login(payload: LoginUserSchema, response: Response):
 
 
 @router.get('/me', response_model=UserResponse)
-def get_me(email: str = Depends(get_current_user)):
-    user = userResponseEntity(User.find_one({'email': email}))
+def get_me(user: UserBaseSchema = Depends(get_current_user)):
     return {"status": "success", "user": user}
