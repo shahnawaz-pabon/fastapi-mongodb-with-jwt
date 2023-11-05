@@ -32,13 +32,16 @@
 │       ├── __init__.py
 │       ├── user.py
 │       └── ...
-│   └── routes
+│   └── endpoints
 │       ├── __init__.py
 │       ├── user.py
 │       └── ...
 ├── docker-compose.yml
+├── Dockerfile
 ├── .env
 ├── .env.example
+├── .gitignore
+├── README.md
 └── requirements.txt
 ```
 
