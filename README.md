@@ -32,6 +32,10 @@
 │       ├── __init__.py
 │       ├── user.py
 │       └── ...
+│   ├── serializers
+│       ├── __init__.py
+│       ├── userSerializers.py
+│       └── ...
 │   └── endpoints
 │       ├── __init__.py
 │       ├── user.py
